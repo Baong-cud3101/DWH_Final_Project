@@ -1,0 +1,12 @@
+# Sao chép thành dbt/profiles.yml (đã được .gitignore) hoặc ~/.dbt/profiles.yml
+ecommerce_dbt:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: service-account
+      project: formidable-app-510501-p3
+      dataset: Dataset2_Silver
+      location: <điền location>
+      keyfile: <đường dẫn tuyệt đối tới file khóa JSON>
+      threads: 4

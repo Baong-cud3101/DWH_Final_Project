@@ -1,0 +1,19 @@
+# Bí mật và khóa truy cập
+.env
+.secrets/
+*-key.json
+service-account*.json
+# Dữ liệu thô chứa thông tin cá nhân (email, ngày sinh): không đưa lên Git
+data/*.csv
+data/raw/*.csv
+data/exports/*
+!data/exports/.gitkeep
+# dbt
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+dbt/profiles.yml
+# Python
+__pycache__/
+.venv/
+.ipynb_checkpoints/
