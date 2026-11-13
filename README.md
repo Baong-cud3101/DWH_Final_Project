@@ -55,12 +55,6 @@ Lệnh lẻ: `python scripts/run_dbt.py build`, `python scripts/run_dbt.py docs 
 | `report/mermaid/` | mã mermaid 6 sơ đồ để vẽ lại |
 | `report/final/` | báo cáo Word |
 
-## Việc nhóm cần làm thủ công
-
-1. Vẽ 6 sơ đồ từ `report/mermaid/*.mmd` (mermaid.live hoặc draw.io), thay vào các khung vàng trong Word.
-2. Chụp 4 ảnh: `dbt build` (dòng `Done. PASS=124`), cây schema trong DBeaver, lineage `dbt docs serve`, 4 trang dashboard.
-3. Dashboard Power BI: chạy `python scripts/11_build_powerbi.py` (đã có trong `run_all.py`), mở `powerbi/XomEcom_Dashboard.pbip` bằng Power BI Desktop và bấm Refresh. Đặc tả ở Phụ lục C; đổi thư mục CSV bằng tham số `DataFolder`. Bản đồ trang Địa lý là scatter kinh độ × vĩ độ nên hiển thị được mà không cần đăng nhập.
-4. Điền tên nhóm, MSSV, logo UEL, link Google Drive, bảng phân công; trong Word nhấn Ctrl+A rồi F9 để cập nhật Mục lục và Danh mục hình/bảng.
 
 ## Bảo mật dữ liệu
 
