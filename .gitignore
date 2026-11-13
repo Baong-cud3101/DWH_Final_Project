@@ -3,16 +3,28 @@
 .secrets/
 *-key.json
 service-account*.json
-# Dữ liệu thô chứa thông tin cá nhân (email, ngày sinh): không đưa lên Git
+
+# Dữ liệu thô chứa thông tin cá nhân (email, ngày sinh) và kho dữ liệu: không đưa lên Git
 data/*.csv
 data/raw/*.csv
 data/exports/*
 !data/exports/.gitkeep
+exports/
+warehouse/*.duckdb
+warehouse/*.wal
+models/*.joblib
+
+# Power BI: file .pbix và cache .pbi chứa dữ liệu đã nạp
+*.pbix
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+
 # dbt
 dbt/target/
 dbt/dbt_packages/
 dbt/logs/
-dbt/profiles.yml
+logs/
+
 # Python
 __pycache__/
 .venv/

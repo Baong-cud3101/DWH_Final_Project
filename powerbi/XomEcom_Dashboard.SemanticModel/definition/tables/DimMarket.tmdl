@@ -1,0 +1,20 @@
+table DimMarket
+	lineageTag: c3268e17-970d-5058-8a33-8f0656a640c4
+
+	column market
+		dataType: string
+		lineageTag: 284d5d3f-772d-537b-b682-a80c6bdb1b92
+		summarizeBy: none
+		sourceColumn: market
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimMarket = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [market = text], {{"Africa"}, {"Asia Pacific"}, {"Europe"}, {"LATAM"}, {"USCA"}, {"Unknown"}})
+				in
+				    Source
+
+	annotation PBI_ResultType = Table

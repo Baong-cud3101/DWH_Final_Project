@@ -1,0 +1,4 @@
+expression DataFolder = "D:\DWH_Final_Project\XomEcom_DuckDB\exports\powerbi\" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+	lineageTag: 12955706-96a3-5d43-84d1-8833f7f2bf75
+
+	annotation PBI_ResultType = Text

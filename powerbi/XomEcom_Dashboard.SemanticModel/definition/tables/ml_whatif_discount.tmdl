@@ -1,0 +1,62 @@
+table ml_whatif_discount
+	lineageTag: a54417ff-1190-5323-bf5f-b78169a819c1
+
+	column discount_level
+		dataType: double
+		lineageTag: b3ae8005-c033-5524-98c3-30121771dd3c
+		summarizeBy: none
+		sourceColumn: discount_level
+
+		annotation SummarizationSetBy = Automatic
+
+	column category
+		dataType: string
+		lineageTag: 82c8667b-cf53-505d-9f22-2ae5ab2f3213
+		summarizeBy: none
+		sourceColumn: category
+
+		annotation SummarizationSetBy = Automatic
+
+	column market
+		dataType: string
+		lineageTag: bfe10652-070e-5833-8487-761c6b754a87
+		summarizeBy: none
+		sourceColumn: market
+
+		annotation SummarizationSetBy = Automatic
+
+	column sales
+		dataType: double
+		lineageTag: d139be9f-3c49-5a5b-b0aa-4dbb6b230295
+		summarizeBy: sum
+		sourceColumn: sales
+
+		annotation SummarizationSetBy = Automatic
+
+	column pred_profit
+		dataType: double
+		lineageTag: 34afbf73-332d-51f0-a982-e15362d0592a
+		summarizeBy: sum
+		sourceColumn: pred_profit
+
+		annotation SummarizationSetBy = Automatic
+
+	column pred_margin
+		dataType: double
+		lineageTag: 1802d8a7-a41d-5cbf-af2d-3a70ef5fec46
+		summarizeBy: sum
+		sourceColumn: pred_margin
+
+		annotation SummarizationSetBy = Automatic
+
+	partition ml_whatif_discount = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "ml_whatif_discount.csv"), [Delimiter = ",", Columns = 6, Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"discount_level", type number}, {"category", type text}, {"market", type text}, {"sales", type number}, {"pred_profit", type number}, {"pred_margin", type number}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

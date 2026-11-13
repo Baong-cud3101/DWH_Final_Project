@@ -1,0 +1,3 @@
+Đặt 4 file customer.csv, ecom_sales.csv, product.csv, region.csv vào thư mục này rồi chạy
+python scripts/run_all.py
+Dữ liệu gốc không kèm theo vì chứa thông tin cá nhân (họ tên, email, ngày sinh).

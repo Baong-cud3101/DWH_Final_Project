@@ -1,0 +1,65 @@
+table ml_forecast_monthly
+	lineageTag: 9831c97b-b743-511c-8fc9-157aa78e1fea
+
+	column month_start
+		dataType: dateTime
+		formatString: mmm yyyy
+		lineageTag: 41ca6de6-dc93-527c-b7dc-aff8454af0bc
+		summarizeBy: none
+		sourceColumn: month_start
+
+		annotation SummarizationSetBy = Automatic
+
+	column revenue
+		dataType: double
+		lineageTag: da479809-71e1-5814-add2-b269767c090f
+		summarizeBy: sum
+		sourceColumn: revenue
+
+		annotation SummarizationSetBy = Automatic
+
+	column profit
+		dataType: double
+		lineageTag: 673943aa-de27-5c3d-9617-865e8c8ec0aa
+		summarizeBy: sum
+		sourceColumn: profit
+
+		annotation SummarizationSetBy = Automatic
+
+	column margin
+		dataType: double
+		lineageTag: d2647daa-e736-5425-819d-39686e929122
+		summarizeBy: sum
+		sourceColumn: margin
+
+		annotation SummarizationSetBy = Automatic
+
+	column kind
+		dataType: string
+		lineageTag: 128012fe-ff9a-56cc-82a9-202e6a8f6a9c
+		summarizeBy: none
+		sourceColumn: kind
+
+		annotation SummarizationSetBy = Automatic
+
+	column year
+		dataType: int64
+		formatString: 0
+		lineageTag: 8497115d-05b8-511b-8e4f-4c3b75fab3b9
+		summarizeBy: none
+		sourceColumn: year
+
+		annotation SummarizationSetBy = Automatic
+
+	partition ml_forecast_monthly = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "ml_forecast_monthly.csv"), [Delimiter = ",", Columns = 5, Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"month_start", type datetime}, {"revenue", type number}, {"profit", type number}, {"margin", type number}, {"kind", type text}}, "en-US"),
+				    Added0 = Table.AddColumn(Typed, "year", each Date.Year([month_start]), Int64.Type)
+				in
+				    Added0
+
+	annotation PBI_ResultType = Table

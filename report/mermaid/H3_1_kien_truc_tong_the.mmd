@@ -1,0 +1,20 @@
+flowchart LR
+    subgraph SRC["Nguồn"]
+        CSV["4 file CSV<br/>ecom_sales, customer,<br/>product, region"]
+    end
+    subgraph DUCK["Kho dữ liệu DuckDB (xomecom.duckdb)"]
+        B[("BRONZE<br/>4 bảng thô, VARCHAR<br/>+ _ingested_at, _source_file<br/>51.290 dòng giao dịch")]
+        S[("SILVER<br/>4 model dbt đã làm sạch,<br/>ép kiểu, gắn cờ<br/>51.290 dòng")]
+        G[("GOLD - Star schema Kimball<br/>fact_sales (51.290)<br/>fact_monthly_snapshot (721)<br/>6 dimension")]
+        M[("MART<br/>5 data mart + KPI overview<br/>metric_catalog")]
+        ML[("ML<br/>ml_features, kết quả mô hình,<br/>model_registry")]
+    end
+    PY["Python<br/>scikit-learn, statsmodels"]
+    PBI["Power BI<br/>4 trang dashboard"]
+    CSV -->|"Python + read_csv_auto"| B
+    B -->|"dbt"| S -->|"dbt"| G
+    G -->|"dbt"| M
+    G -->|"dbt"| ML
+    ML -->|"đọc đặc trưng"| PY -->|"ghi kết quả"| ML
+    M -->|"COPY TO CSV"| PBI
+    ML -->|"COPY TO CSV"| PBI

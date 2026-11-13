@@ -1,0 +1,16 @@
+flowchart LR
+    G[("GOLD<br/>fact_sales + dims")] -->|"dbt SQL"| F[("ml.ml_features<br/>wide, grain row_id")]
+    G -->|"dbt SQL"| CV[("mart.mart_customer_value<br/>RFM mỗi khách")]
+    G -->|"dbt SQL"| SN[("fact_monthly_snapshot<br/>chuỗi tháng")]
+    F --> SPLIT{"Chia theo thời gian<br/>train 2020-2022<br/>test 2023"}
+    SPLIT --> FIT["fit()<br/>LinearRegression<br/>HistGradientBoosting"]
+    CV --> KM["fit() + predict()<br/>KMeans k = 2..6"]
+    G -->|"dbt SQL"| FO[("ml.ml_first_order_features<br/>đơn đầu mỗi khách")]
+    FO --> CL["fit() + predict_proba()<br/>Decision Tree, Naive Bayes<br/>train cohort 2020-21, test 2022"]
+    CL --> EV4["AUC, F1, ma trận nhầm lẫn,<br/>lift theo decile, luật if-then"]
+    SN --> TS["fit() + forecast()<br/>ETS, SARIMA"]
+    FIT --> EV["Đánh giá<br/>R², MAE, permutation importance,<br/>model drift 2023"]
+    KM --> EV2["Silhouette, Davies-Bouldin,<br/>mô tả cụm"]
+    TS --> EV3["MAPE 2023,<br/>bất thường theo phần dư"]
+    EV --> WI["predict() what-if<br/>các mức chiết khấu"]
+    EV & EV2 & EV3 & EV4 & WI -->|"ghi kết quả"| OUT[("Schema ml<br/>customer_clusters, repeat_scores,<br/>whatif_discount, forecast_monthly,<br/>monthly_anomalies, model_registry")]

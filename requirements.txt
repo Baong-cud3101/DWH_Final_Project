@@ -1,8 +1,8 @@
-dbt-bigquery
-google-cloud-bigquery
-db-dtypes
+duckdb>=1.1
+dbt-duckdb>=1.8
 pandas
-pyarrow
+scikit-learn
+statsmodels
 matplotlib
 python-docx
-jupyter
+joblib

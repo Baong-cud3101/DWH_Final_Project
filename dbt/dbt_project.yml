@@ -1,0 +1,30 @@
+name: xomecom
+version: '1.0'
+config-version: 2
+profile: xomecom
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+analysis-paths: ["analyses"]
+target-path: "target"
+clean-targets: ["target"]
+
+vars:
+  reference_date: '2023-12-31'
+  deep_discount_threshold: 0.30
+
+models:
+  xomecom:
+    +materialized: table
+    silver:
+      +schema: silver
+    gold:
+      +schema: gold
+    marts:
+      +schema: mart
+    ml:
+      +schema: ml
+
+on-run-end:
+  - "{{ log_run_results(results) }}"

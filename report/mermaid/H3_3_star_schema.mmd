@@ -1,0 +1,78 @@
+erDiagram
+    DIM_DATE ||--o{ FACT_SALES : date_key
+    DIM_CUSTOMER ||--o{ FACT_SALES : customer_key
+    DIM_PRODUCT ||--o{ FACT_SALES : product_key
+    DIM_REGION ||--o{ FACT_SALES : region_key
+    DIM_SEGMENT ||--o{ FACT_SALES : segment_key
+    DIM_FLAGS ||--o{ FACT_SALES : flag_key
+    FACT_SALES {
+        int row_id PK "grain"
+        string order_id "degenerate dimension"
+        int date_key FK
+        int customer_key FK
+        int product_key FK
+        int region_key FK
+        int segment_key FK
+        int flag_key FK
+        int quantity "measure"
+        decimal sales "measure"
+        decimal discount "measure"
+        decimal profit "measure"
+        decimal implied_cost "measure = sales - profit"
+    }
+    DIM_DATE {
+        int date_key PK "YYYYMMDD"
+        date full_date
+        int year
+        int quarter
+        int month
+        string year_month
+    }
+    DIM_CUSTOMER {
+        int customer_key PK "SK, -1 = Unknown"
+        string customer_id "khóa tự nhiên"
+        string email_hash "md5"
+        string gender
+        string age_group
+        string income_band
+        string occupation
+        string education_level
+    }
+    DIM_PRODUCT {
+        int product_key PK "SK, -1 = Unknown"
+        string product_code
+        string product_name
+        string subcategory
+        string category
+    }
+    DIM_REGION {
+        int region_key PK "SK, -1 = Unknown"
+        string region_code
+        string city
+        string country
+        string region
+        string market
+        string market_group "EMEA = Europe + Africa"
+    }
+    DIM_SEGMENT {
+        int segment_key PK
+        string segment_name
+    }
+    DIM_FLAGS {
+        int flag_key PK "junk dimension, 48 dòng"
+        bool is_valid_product
+        bool is_valid_region
+        string discount_band
+        bool is_deep_discount
+        bool is_loss
+    }
+    FACT_MONTHLY_SNAPSHOT {
+        int month_key "tháng x market x segment"
+        string market
+        string segment
+        decimal revenue
+        decimal profit
+        double profit_margin
+        int total_orders
+        double revenue_yoy_growth
+    }

@@ -1,0 +1,184 @@
+table fact_monthly_snapshot
+	lineageTag: 8d5fac2c-a4dc-55fd-9b8d-55919f971c22
+
+	column month_key
+		dataType: int64
+		formatString: 0
+		lineageTag: 91ce51cf-2fa3-5206-a91c-70fd25c793f0
+		summarizeBy: none
+		sourceColumn: month_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column month_start
+		dataType: dateTime
+		formatString: mmm yyyy
+		lineageTag: ce16e80a-b4f6-521d-848f-67b9393f9701
+		summarizeBy: none
+		sourceColumn: month_start
+
+		annotation SummarizationSetBy = Automatic
+
+	column year
+		dataType: int64
+		formatString: 0
+		lineageTag: 419db0b1-06b9-564e-b871-8453b9c5f67e
+		summarizeBy: none
+		sourceColumn: year
+
+		annotation SummarizationSetBy = Automatic
+
+	column month
+		dataType: int64
+		formatString: 0
+		lineageTag: cf0f51d1-aba7-50cd-9800-e9de2d7dbacb
+		summarizeBy: none
+		sourceColumn: month
+
+		annotation SummarizationSetBy = Automatic
+
+	column market
+		dataType: string
+		lineageTag: 4c399427-1075-54ca-b484-46370f2621bf
+		summarizeBy: none
+		sourceColumn: market
+
+		annotation SummarizationSetBy = Automatic
+
+	column segment
+		dataType: string
+		lineageTag: 8d8e9ca2-2e99-5035-85a6-425cd6a3680b
+		summarizeBy: none
+		sourceColumn: segment
+
+		annotation SummarizationSetBy = Automatic
+
+	column revenue
+		dataType: double
+		lineageTag: d674b032-92bf-5782-9a3a-4666e50124ce
+		summarizeBy: sum
+		sourceColumn: revenue
+
+		annotation SummarizationSetBy = Automatic
+
+	column profit
+		dataType: double
+		lineageTag: 1900dec3-d021-5a11-9c10-2538ebd32987
+		summarizeBy: sum
+		sourceColumn: profit
+
+		annotation SummarizationSetBy = Automatic
+
+	column implied_cost
+		dataType: double
+		lineageTag: dd87fa5e-3e6e-527e-9b57-2d45406fa9ee
+		summarizeBy: sum
+		sourceColumn: implied_cost
+
+		annotation SummarizationSetBy = Automatic
+
+	column total_orders
+		dataType: int64
+		formatString: 0
+		lineageTag: 369184e4-fe91-55c3-bfc4-121b177660ee
+		summarizeBy: sum
+		sourceColumn: total_orders
+
+		annotation SummarizationSetBy = Automatic
+
+	column total_lines
+		dataType: int64
+		formatString: 0
+		lineageTag: 32bfc728-600a-58df-860a-6c721e4fcf57
+		summarizeBy: sum
+		sourceColumn: total_lines
+
+		annotation SummarizationSetBy = Automatic
+
+	column active_customers
+		dataType: int64
+		formatString: 0
+		lineageTag: 78d1237d-d7e5-5ffc-b9f3-2c6e2451651d
+		summarizeBy: sum
+		sourceColumn: active_customers
+
+		annotation SummarizationSetBy = Automatic
+
+	column quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 7354cbc2-153f-5275-a971-698a9f4ffc89
+		summarizeBy: sum
+		sourceColumn: quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column avg_discount
+		dataType: double
+		lineageTag: a534a483-1310-5d5d-b2ee-2144703fc0c2
+		summarizeBy: sum
+		sourceColumn: avg_discount
+
+		annotation SummarizationSetBy = Automatic
+
+	column deep_discount_lines
+		dataType: int64
+		formatString: 0
+		lineageTag: 45a515d7-417a-5946-bf03-25e6c0566700
+		summarizeBy: sum
+		sourceColumn: deep_discount_lines
+
+		annotation SummarizationSetBy = Automatic
+
+	column loss_lines
+		dataType: int64
+		formatString: 0
+		lineageTag: 5e855825-ffd3-5099-8a36-d1f09870a834
+		summarizeBy: sum
+		sourceColumn: loss_lines
+
+		annotation SummarizationSetBy = Automatic
+
+	column profit_margin
+		dataType: double
+		lineageTag: 885bebb7-1426-5a1b-9799-0fe7982658f0
+		summarizeBy: sum
+		sourceColumn: profit_margin
+
+		annotation SummarizationSetBy = Automatic
+
+	column revenue_same_month_last_year
+		dataType: double
+		lineageTag: c0fbc82a-8b20-5fe2-99ee-d4fa94249acb
+		summarizeBy: sum
+		sourceColumn: revenue_same_month_last_year
+
+		annotation SummarizationSetBy = Automatic
+
+	column profit_same_month_last_year
+		dataType: double
+		lineageTag: cdaebef2-c241-5ef6-a5a0-42d53cb835be
+		summarizeBy: sum
+		sourceColumn: profit_same_month_last_year
+
+		annotation SummarizationSetBy = Automatic
+
+	column revenue_yoy_growth
+		dataType: double
+		lineageTag: cdbd9874-09b7-5fbc-b4ee-192cbc6b0146
+		summarizeBy: sum
+		sourceColumn: revenue_yoy_growth
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_monthly_snapshot = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "fact_monthly_snapshot.csv"), [Delimiter = ",", Columns = 20, Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"month_key", Int64.Type}, {"month_start", type datetime}, {"year", Int64.Type}, {"month", Int64.Type}, {"market", type text}, {"segment", type text}, {"revenue", type number}, {"profit", type number}, {"implied_cost", type number}, {"total_orders", Int64.Type}, {"total_lines", Int64.Type}, {"active_customers", Int64.Type}, {"quantity", Int64.Type}, {"avg_discount", type number}, {"deep_discount_lines", Int64.Type}, {"loss_lines", Int64.Type}, {"profit_margin", type number}, {"revenue_same_month_last_year", type number}, {"profit_same_month_last_year", type number}, {"revenue_yoy_growth", type number}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

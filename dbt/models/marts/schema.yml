@@ -1,0 +1,64 @@
+version: 2
+
+seeds:
+  - name: metric_catalog
+    description: "Metric catalog: tên, công thức, đơn vị và macro dbt của 9 KPI. Định nghĩa duy nhất cho mọi báo cáo."
+    columns:
+      - name: kpi_code
+        data_tests: [unique, not_null]
+
+models:
+  - name: mart_segment_profitability
+    description: "Data mart Segment Profitability (Q2). Grain: năm x phân khúc x market."
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: ['year', 'segment', 'market']
+    columns:
+      - name: revenue
+        data_tests: [not_null]
+
+  - name: mart_product_profitability
+    description: "Data mart Product Profitability (Q1, Q5). Grain: năm x sản phẩm."
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: ['year', 'product_key']
+
+  - name: mart_geographic_performance
+    description: "Data mart Geographic Performance (Q3). Grain: năm x quốc gia x region (Mỹ chia 4 region, Sudan 2); có tăng trưởng so với năm trước."
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: ['year', 'country', 'region']
+
+  - name: mart_discount_analysis
+    description: "Data mart Discount Analysis (Q1, Q5). Grain: năm x mức chiết khấu x ngành hàng x market x phân khúc."
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: ['year', 'discount', 'category', 'market', 'segment']
+
+  - name: mart_customer_value
+    description: "Data mart Customer Value (Q4). Grain: khách hàng. RFM tại 2023-12-31; frequency = số đơn."
+    columns:
+      - name: customer_key
+        data_tests: [unique, not_null]
+      - name: rfm_segment
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Champions', 'Loyal', 'At Risk', 'New', 'Big One-time', 'Hibernating']
+
+  - name: mart_customer_cohort
+    description: "Cohort khách hàng theo năm mua đầu tiên (Q4). Grain: cohort_year x active_year."
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: ['cohort_year', 'active_year']
+
+  - name: mart_kpi_overview
+    description: "9 KPI của metric catalog theo năm; year = 0 là toàn kỳ."
+    columns:
+      - name: year
+        data_tests: [unique, not_null]

@@ -1,0 +1,8 @@
+xomecom:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('DUCKDB_PATH', '../warehouse/xomecom.duckdb') }}"
+      schema: main
+      threads: 4

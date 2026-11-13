@@ -1,0 +1,79 @@
+relationship 5f38d933-9954-5d88-a900-2ad77b51b819
+	fromColumn: mart_kpi_overview.year
+	toColumn: DimYear.year
+
+relationship 0fd28efb-e4bf-5598-8a8e-419ba3aecfdd
+	fromColumn: mart_segment_profitability.year
+	toColumn: DimYear.year
+
+relationship 628cad36-171f-5772-9f69-b36f34e81897
+	fromColumn: mart_discount_analysis.year
+	toColumn: DimYear.year
+
+relationship 214ff598-c897-561d-9352-f5919566d54e
+	fromColumn: mart_geographic_performance.year
+	toColumn: DimYear.year
+
+relationship a264ce7b-009f-5635-844a-de21680a0c5c
+	fromColumn: mart_product_profitability.year
+	toColumn: DimYear.year
+
+relationship 24e9b301-c0c7-59b7-879f-e4dd7c15c29f
+	fromColumn: fact_monthly_snapshot.year
+	toColumn: DimYear.year
+
+relationship 4f278b5c-6e01-51a4-8d97-ff689045b7e7
+	fromColumn: mart_segment_profitability.market
+	toColumn: DimMarket.market
+
+relationship 63cd72a2-1849-55f4-9007-b62acf2cfe1a
+	fromColumn: mart_discount_analysis.market
+	toColumn: DimMarket.market
+
+relationship 1a207320-e732-5071-b8eb-d484c304e50e
+	fromColumn: mart_geographic_performance.market
+	toColumn: DimMarket.market
+
+relationship d04ffb69-b08b-5de8-a94b-c10e7043f097
+	fromColumn: fact_monthly_snapshot.market
+	toColumn: DimMarket.market
+
+relationship 4642dcd3-8657-5642-8b6c-ee81579b1539
+	fromColumn: ml_whatif_discount.market
+	toColumn: DimMarket.market
+
+relationship 92e90045-9b06-50bf-b920-a00b6a56847b
+	fromColumn: mart_segment_profitability.segment
+	toColumn: DimSegment.segment
+
+relationship 9dbe1b8d-34f8-5bfa-aafb-dd1881fe0599
+	fromColumn: mart_discount_analysis.segment
+	toColumn: DimSegment.segment
+
+relationship a7c1e355-f83a-5061-acff-d446ce4293e6
+	fromColumn: fact_monthly_snapshot.segment
+	toColumn: DimSegment.segment
+
+relationship fd010b87-44b7-562a-940c-5ca939227527
+	fromColumn: mart_customer_value.segment
+	toColumn: DimSegment.segment
+
+relationship fe98fbb3-e518-5cd1-b9fe-d6fb3cdde99d
+	fromColumn: mart_discount_analysis.category
+	toColumn: DimCategory.category
+
+relationship 0d4ff7df-4f52-5c34-8555-4cf6f17374b8
+	fromColumn: mart_product_profitability.category
+	toColumn: DimCategory.category
+
+relationship 88dcf810-bbab-51f4-9ae5-28e9b260da65
+	fromColumn: ml_whatif_discount.category
+	toColumn: DimCategory.category
+
+relationship 0f1285af-8ff3-5996-8d60-8cc476f9f8c4
+	fromColumn: mart_customer_value.cluster
+	toColumn: ml_cluster_profile.cluster
+
+relationship 933af54a-fcc2-50c1-91f9-3763cecae6ab
+	fromColumn: ml_monthly_anomalies.month_start
+	toColumn: ml_forecast_monthly.month_start

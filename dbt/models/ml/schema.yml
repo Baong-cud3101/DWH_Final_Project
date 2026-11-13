@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: ml_features
+    description: "Bảng đặc trưng wide (grain row_id) cho hồi quy biên lợi nhuận. Chia theo thời gian (train 2020-2022, test 2023). Không dùng sales/profit làm đặc trưng; label_* chỉ để đánh giá."
+    columns:
+      - name: row_id
+        data_tests: [unique, not_null]
+      - name: split
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['train', 'test']
+      - name: target_margin
+        data_tests: [not_null]
+
+  - name: ml_first_order_features
+    description: "Đặc trưng đơn đầu tiên của mỗi khách (grain khách hàng) cho phân lớp 'quay lại trong 365 ngày'. Chỉ khách có đơn đầu <= 2022-12-31 (đủ 365 ngày quan sát). Chia theo cohort: train 2020-2021, test 2022."
+    columns:
+      - name: customer_key
+        data_tests: [unique, not_null]
+      - name: returned_365d
+        description: "Nhãn: có đơn thứ hai trong vòng 365 ngày sau đơn đầu."
+        data_tests: [not_null]
+      - name: split
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['train', 'test']
+      - name: first_discount
+        description: "Chiết khấu bình quân của đơn đầu (trọng số doanh thu)."
+        data_tests: [not_null]

@@ -1,0 +1,79 @@
+version: 2
+
+models:
+  - name: silver_customer
+    description: "Khách hàng đã chuẩn hóa. Khách thiếu gender được gán 'Unknown' (cờ is_gender_imputed). age tính tại ngày tham chiếu 2023-12-31. Còn chứa dữ liệu cá nhân, chỉ dùng nội bộ."
+    columns:
+      - name: customer_id
+        description: "Khóa tự nhiên của khách hàng."
+        data_tests: [unique, not_null]
+      - name: gender
+        description: "Male / Female / Unknown."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Male', 'Female', 'Unknown']
+      - name: birth_date
+        data_tests: [not_null]
+      - name: age
+        description: "Tuổi tại 2023-12-31."
+        data_tests: [not_null]
+      - name: annual_income
+        data_tests: [not_null]
+
+  - name: silver_product
+    description: "Danh mục sản phẩm: 5 ngành hàng mỹ phẩm và chăm sóc cá nhân."
+    columns:
+      - name: product_code
+        data_tests: [unique, not_null]
+      - name: category
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Body care', 'Face care', 'Hair care', 'Home and Accessories', 'Make up']
+
+  - name: silver_region
+    description: "Khu vực địa lý. market_group: EMEA = Europe + Africa, APAC = Asia Pacific."
+    columns:
+      - name: region_code
+        data_tests: [unique, not_null]
+      - name: market
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['USCA', 'Europe', 'Africa', 'Asia Pacific', 'LATAM']
+
+  - name: silver_sales_integrated
+    description: "Giao dịch đã ép kiểu, tích hợp danh mục, có cờ chất lượng. Grain: row_id. Bảo toàn 100% số dòng Bronze."
+    columns:
+      - name: row_id
+        description: "Khóa dòng giao dịch (grain)."
+        data_tests: [unique, not_null]
+      - name: order_id
+        description: "Mã đơn hàng; một đơn có nhiều dòng."
+        data_tests: [not_null]
+      - name: order_date
+        description: "Trục thời gian duy nhất."
+        data_tests: [not_null]
+      - name: customer_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_customer')
+                field: customer_id
+      - name: segment
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Consumer', 'Corporate', 'Self-Employed']
+      - name: sales
+        data_tests: [not_null]
+      - name: profit
+        description: "Có thể âm (giao dịch lỗ thật, giữ nguyên)."
+        data_tests: [not_null]
+      - name: discount
+        data_tests: [not_null]
+      - name: implied_cost
+        description: "Chi phí ngầm = sales - profit."

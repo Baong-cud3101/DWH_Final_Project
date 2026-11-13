@@ -1,0 +1,10 @@
+kpi_code,kpi_name,formula,unit,dbt_macro,business_question,description
+REV,Revenue,SUM(sales),USD,kpi_revenue,Q1-Q5,Tổng doanh thu
+PRF,Profit,SUM(profit),USD,kpi_profit,Q1-Q5,Tổng lợi nhuận (có thể âm ở dòng lỗ)
+MRG,Profit Margin,SUM(profit) / SUM(sales),%,kpi_profit_margin,Q1-Q5,Biên lợi nhuận
+CST,Implied Cost,SUM(sales) - SUM(profit),USD,kpi_implied_cost,Q2 Q5,Chi phí ngầm vì dữ liệu không có cột chi phí
+ORD,Total Orders,COUNT(DISTINCT order_id),đơn,kpi_total_orders,Q2 Q3,Số đơn hàng
+AOV,Average Order Value,SUM(sales) / COUNT(DISTINCT order_id),USD/đơn,kpi_aov,Q2 Q4,Giá trị trung bình một đơn
+LLR,Loss-Making Line Rate,số dòng profit < 0 / tổng số dòng,%,kpi_loss_line_rate,Q1 Q2,Tỷ lệ dòng giao dịch bị lỗ
+DDS,Deep-Discount Share,số dòng discount > 30% / tổng số dòng,%,kpi_deep_discount_share,Q1 Q3,Tỷ lệ dòng giảm giá sâu
+RCR,Repeat Customer Rate,khách có >= 2 đơn / tổng số khách,%,kpi_repeat_customer_rate,Q4,Tỷ lệ khách quay lại mua

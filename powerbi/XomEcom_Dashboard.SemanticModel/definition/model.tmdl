@@ -1,0 +1,31 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBI_QueryOrder = ["DataFolder", "_Measures", "DimYear", "DimMarket", "DimSegment", "DimCategory", "mart_kpi_overview", "mart_segment_profitability", "mart_product_profitability", "mart_geographic_performance", "mart_discount_analysis", "mart_customer_cohort", "mart_customer_value", "fact_monthly_snapshot", "metric_catalog", "ml_cluster_profile", "ml_whatif_discount", "ml_whatif_discount_cap", "ml_forecast_monthly", "ml_monthly_anomalies"]
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+ref table _Measures
+ref table DimYear
+ref table DimMarket
+ref table DimSegment
+ref table DimCategory
+ref table mart_kpi_overview
+ref table mart_segment_profitability
+ref table mart_product_profitability
+ref table mart_geographic_performance
+ref table mart_discount_analysis
+ref table mart_customer_cohort
+ref table mart_customer_value
+ref table fact_monthly_snapshot
+ref table metric_catalog
+ref table ml_cluster_profile
+ref table ml_whatif_discount
+ref table ml_whatif_discount_cap
+ref table ml_forecast_monthly
+ref table ml_monthly_anomalies

@@ -1,25 +1,67 @@
-# Xóm E-Com Data Warehouse
+# Xóm E-Com Data Warehouse trên DuckDB
 
-Đồ án môn Nhà kho dữ liệu và tích hợp. Medallion (Bronze, Silver, Gold) trên BigQuery, dbt, BigQuery ML.
+Đồ án học phần Nhà kho dữ liệu và tích hợp (BIM5021, UEL). Kho dữ liệu Medallion (Bronze, Silver, Gold) trên **DuckDB**, biến đổi bằng **dbt-duckdb**, học máy bằng **Python** trên dữ liệu Gold, dashboard **Power BI** đọc CSV xuất từ data mart. Đề cương: `../DeCuong_Final_DuckDB.docx`.
 
-## Cấu trúc
+## Chạy lại toàn bộ (một lệnh)
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate            # Windows  (Linux/macOS: source .venv/bin/activate)
+pip install -r requirements.txt
+# đặt 4 file CSV vào data/raw/
+python scripts/run_all.py         # khoảng 1 phút
+```
+
+Các bước của `run_all.py` (dừng ngay nếu một bước lỗi):
+
+| Bước | Script | Kết quả |
+| --- | --- | --- |
+| 1 | `00_load_bronze.py` | 4 bảng `bronze.*` (VARCHAR + `_ingested_at`, `_source_file`), đối chiếu số dòng với CSV |
+| 2 | `run_dbt.py build` | Silver, Gold (star schema), mart, ml_features, ml_first_order_features + 124 nút (101 kiểm thử) |
+| 3 | `01_profiling.py` | Profiling chất lượng, bảng B2.4, B4.2 |
+| 4–7 | `03_ml_kmeans.py`, `04_ml_margin_whatif.py`, `04b_ml_classification.py` (cây quyết định, Naive Bayes), `05_ml_timeseries.py` | Schema `ml`, model_registry, file `models/*.joblib` |
+| 8 | `06_analysis_sql.py` | Giỏ hàng (SQL + Apriori), cohort, benchmark sắp xếp theo order_date |
+| 9 | `07_charts.py` | Hình và bảng cho Chương 2, 4 |
+| 10 | `08_export_marts.py` | 14 file CSV trong `exports/powerbi/` (chỉ cột không nhạy cảm) |
+| 11 | `11_build_powerbi.py` | Dashboard `powerbi/XomEcom_Dashboard.pbip` (mô hình TMDL + báo cáo PBIR, 5 trang) |
+| 12 | `09_checks.py` | Đối chiếu Bronze = Silver = Gold (dừng nếu lệch) |
+| 13 | `run_dbt.py docs generate` | Tài liệu và lineage dbt |
+| 14 | `10_build_report.py` | `report/final/BaoCao_XomEcom_DuckDB.docx` |
+
+Lệnh lẻ: `python scripts/run_dbt.py build`, `python scripts/run_dbt.py docs serve` (xem lineage), `python scripts/run_all.py --no-report`.
+
+## Cấu trúc kho (`warehouse/xomecom.duckdb`)
+
+| Schema | Bảng |
+| --- | --- |
+| bronze | customer, ecom_sales, product, region |
+| silver | silver_customer, silver_product, silver_region, silver_sales_integrated |
+| gold | fact_sales, fact_monthly_snapshot, dim_date, dim_customer, dim_product, dim_region, dim_segment, dim_flags |
+| mart | mart_segment_profitability, mart_product_profitability, mart_geographic_performance, mart_discount_analysis, mart_customer_value, mart_customer_cohort, mart_kpi_overview |
+| ml | ml_features, customer_clusters, cluster_profile, whatif_discount, whatif_discount_cap, margin_*, forecast_monthly, monthly_anomalies, model_registry, ... |
+| main | metric_catalog (seed), audit_run_log (log mỗi lần dbt chạy) |
+
+## Thư mục
 
 | Thư mục | Nội dung |
 | --- | --- |
-| `data/raw/` | 4 file CSV nguồn (không đưa lên Git) |
-| `data/exports/` | Kết quả xuất tạm (không đưa lên Git) |
-| `notebooks/` | Notebook khảo sát và notebook Colab cũ (tham khảo) |
-| `dbt/` | Dự án dbt: staging, silver, gold, marts, ml |
-| `sql/ml/` | Các câu lệnh BigQuery ML |
-| `sql/checks/` | Truy vấn đối chiếu số liệu giữa các tầng |
-| `scripts/` | Script Python (nạp Bronze, xuất kết quả) |
-| `results/` | Bảng, biểu đồ, ảnh chụp dùng cho báo cáo |
-| `report/drafts/` | Bản nháp báo cáo |
-| `report/final/` | Báo cáo và slide nộp |
-| `docs/` | Yêu cầu môn học, đề cương, slide bài giảng, báo cáo mẫu |
+| `dbt/` | dự án dbt: `models/{silver,gold/dims,gold/facts,marts,ml}`, `macros/` (metric catalog, discount_band, safe_divide, audit log), `tests/` (đối chiếu), `seeds/metric_catalog.csv` |
+| `scripts/` | toàn bộ Python của pipeline |
+| `sql/analysis`, `sql/checks` | SQL phân tích và đối chiếu |
+| `results/tables`, `results/figures` | bảng CSV và hình PNG dùng trong báo cáo; `key_numbers.json` chứa mọi con số của báo cáo |
+| `exports/powerbi/` | CSV cho Power BI |
+| `powerbi/` | Dự án Power BI sinh từ `scripts/11_build_powerbi.py` (không chứa dữ liệu; cache `.pbi/` bị bỏ qua) |
+| `report/drafts/` | nội dung báo cáo (Markdown) – sửa ở đây rồi chạy lại `10_build_report.py` |
+| `report/mermaid/` | mã mermaid 6 sơ đồ để vẽ lại |
+| `report/final/` | báo cáo Word |
 
-## Cài đặt
-1. `pip install -r requirements.txt`
-2. Sao chép `.env.example` thành `.env` và điền giá trị.
-3. Sao chép `dbt/profiles.yml.example` thành `dbt/profiles.yml` và điền giá trị.
-4. `cd dbt && dbt debug`
+## Việc nhóm cần làm thủ công
+
+1. Vẽ 6 sơ đồ từ `report/mermaid/*.mmd` (mermaid.live hoặc draw.io), thay vào các khung vàng trong Word.
+2. Chụp 4 ảnh: `dbt build` (dòng `Done. PASS=124`), cây schema trong DBeaver, lineage `dbt docs serve`, 4 trang dashboard.
+3. Dashboard Power BI: chạy `python scripts/11_build_powerbi.py` (đã có trong `run_all.py`), mở `powerbi/XomEcom_Dashboard.pbip` bằng Power BI Desktop và bấm Refresh. Đặc tả ở Phụ lục C; đổi thư mục CSV bằng tham số `DataFolder`. Bản đồ trang Địa lý là scatter kinh độ × vĩ độ nên hiển thị được mà không cần đăng nhập.
+4. Điền tên nhóm, MSSV, logo UEL, link Google Drive, bảng phân công; trong Word nhấn Ctrl+A rồi F9 để cập nhật Mục lục và Danh mục hình/bảng.
+
+## Bảo mật dữ liệu
+
+`data/raw/*.csv`, `warehouse/*.duckdb` và `exports/` chứa hoặc dẫn xuất từ dữ liệu cá nhân, nên đã nằm trong `.gitignore`. Gold chỉ giữ email đã băm và nhóm tuổi.

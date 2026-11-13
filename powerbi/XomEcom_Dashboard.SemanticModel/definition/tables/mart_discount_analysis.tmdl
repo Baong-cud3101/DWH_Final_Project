@@ -1,0 +1,140 @@
+table mart_discount_analysis
+	lineageTag: 4f9f48ae-87ee-59ff-ae68-717c1a6907fe
+
+	column year
+		dataType: int64
+		formatString: 0
+		lineageTag: e7c4d388-966e-5a45-955d-a81ff7afb16f
+		summarizeBy: none
+		sourceColumn: year
+
+		annotation SummarizationSetBy = Automatic
+
+	column discount_band_order
+		dataType: int64
+		formatString: 0
+		lineageTag: 59406c38-2b04-59e6-806e-73b6d790ec7c
+		summarizeBy: none
+		sourceColumn: discount_band_order
+
+		annotation SummarizationSetBy = Automatic
+
+	column discount_band
+		dataType: string
+		lineageTag: 78c9e8ad-eafb-5202-806b-3c237d254cd1
+		summarizeBy: none
+		sourceColumn: discount_band
+		sortByColumn: discount_band_order
+
+		annotation SummarizationSetBy = Automatic
+
+	column discount
+		dataType: double
+		lineageTag: ae376b37-25fd-588a-9fba-130dab83a4e2
+		summarizeBy: none
+		sourceColumn: discount
+
+		annotation SummarizationSetBy = Automatic
+
+	column category
+		dataType: string
+		lineageTag: 87686c24-83fd-5573-b1ac-35c9f925b539
+		summarizeBy: none
+		sourceColumn: category
+
+		annotation SummarizationSetBy = Automatic
+
+	column market
+		dataType: string
+		lineageTag: a3d2fa6a-1885-5daa-a77e-ac207d91955b
+		summarizeBy: none
+		sourceColumn: market
+
+		annotation SummarizationSetBy = Automatic
+
+	column segment
+		dataType: string
+		lineageTag: f0a6a422-38d1-566e-9e37-3163cd14a121
+		summarizeBy: none
+		sourceColumn: segment
+
+		annotation SummarizationSetBy = Automatic
+
+	column total_lines
+		dataType: int64
+		formatString: 0
+		lineageTag: d1c9622a-2c1f-52c9-ad4f-befdd9a4241c
+		summarizeBy: sum
+		sourceColumn: total_lines
+
+		annotation SummarizationSetBy = Automatic
+
+	column quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: a3bbb0fc-da1c-5966-a8fe-b016a2ebf3f5
+		summarizeBy: sum
+		sourceColumn: quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column revenue
+		dataType: double
+		lineageTag: 487fa2f6-1bd1-5fe9-8553-f6a91795b823
+		summarizeBy: sum
+		sourceColumn: revenue
+
+		annotation SummarizationSetBy = Automatic
+
+	column implied_cost
+		dataType: double
+		lineageTag: 4cae80d4-810d-5805-bfbd-f47155319ef5
+		summarizeBy: sum
+		sourceColumn: implied_cost
+
+		annotation SummarizationSetBy = Automatic
+
+	column profit
+		dataType: double
+		lineageTag: b5cecebe-ed7e-5858-bdf8-e683a18b3ab8
+		summarizeBy: sum
+		sourceColumn: profit
+
+		annotation SummarizationSetBy = Automatic
+
+	column profit_margin
+		dataType: double
+		lineageTag: ea2969ec-2bfc-5ffb-a5cd-037d4bb8c9f0
+		summarizeBy: sum
+		sourceColumn: profit_margin
+
+		annotation SummarizationSetBy = Automatic
+
+	column loss_lines
+		dataType: int64
+		formatString: 0
+		lineageTag: f953d37e-e2eb-5a49-aae2-3fc5872d25af
+		summarizeBy: sum
+		sourceColumn: loss_lines
+
+		annotation SummarizationSetBy = Automatic
+
+	column loss_line_rate
+		dataType: double
+		lineageTag: b2f54e4c-e68d-551b-8831-675bc52b1583
+		summarizeBy: sum
+		sourceColumn: loss_line_rate
+
+		annotation SummarizationSetBy = Automatic
+
+	partition mart_discount_analysis = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "mart_discount_analysis.csv"), [Delimiter = ",", Columns = 15, Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"year", Int64.Type}, {"discount_band_order", Int64.Type}, {"discount_band", type text}, {"discount", type number}, {"category", type text}, {"market", type text}, {"segment", type text}, {"total_lines", Int64.Type}, {"quantity", Int64.Type}, {"revenue", type number}, {"implied_cost", type number}, {"profit", type number}, {"profit_margin", type number}, {"loss_lines", Int64.Type}, {"loss_line_rate", type number}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

@@ -1,0 +1,27 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: "Tầng Bronze: 4 file CSV nạp nguyên bản bằng scripts/00_load_bronze.py (mọi cột VARCHAR, thêm _ingested_at và _source_file)."
+    schema: bronze
+    tables:
+      - name: ecom_sales
+        description: "Giao dịch, mỗi dòng là một sản phẩm trong một đơn hàng."
+        columns:
+          - name: row_id
+            data_tests: [unique, not_null]
+      - name: customer
+        description: "Thông tin khách hàng (có dữ liệu cá nhân)."
+        columns:
+          - name: customer_id
+            data_tests: [unique, not_null]
+      - name: product
+        description: "Danh mục sản phẩm."
+        columns:
+          - name: product_code
+            data_tests: [unique, not_null]
+      - name: region
+        description: "Danh mục khu vực địa lý."
+        columns:
+          - name: region_code
+            data_tests: [unique, not_null]

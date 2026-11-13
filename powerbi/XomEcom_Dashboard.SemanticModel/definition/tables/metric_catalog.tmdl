@@ -1,0 +1,70 @@
+table metric_catalog
+	lineageTag: 5be42aea-3078-55cd-ae0a-719142578cb5
+
+	column kpi_code
+		dataType: string
+		lineageTag: 3ec29448-3425-5779-9cd3-cd47f643f183
+		summarizeBy: none
+		sourceColumn: kpi_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column kpi_name
+		dataType: string
+		lineageTag: 855a2d77-d8e2-52e4-9319-46f35b347c58
+		summarizeBy: none
+		sourceColumn: kpi_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column formula
+		dataType: string
+		lineageTag: 45827689-4545-5f4f-91e6-91b230baa017
+		summarizeBy: none
+		sourceColumn: formula
+
+		annotation SummarizationSetBy = Automatic
+
+	column unit
+		dataType: string
+		lineageTag: 4d92e71d-6d49-54a0-b0c0-20e84a92a861
+		summarizeBy: none
+		sourceColumn: unit
+
+		annotation SummarizationSetBy = Automatic
+
+	column dbt_macro
+		dataType: string
+		lineageTag: 2fe938cc-6b7c-51bd-9e61-db5daba6b81b
+		summarizeBy: none
+		sourceColumn: dbt_macro
+
+		annotation SummarizationSetBy = Automatic
+
+	column business_question
+		dataType: string
+		lineageTag: a8ffad19-3aef-5ef3-88e4-ec2e90d8e2c2
+		summarizeBy: none
+		sourceColumn: business_question
+
+		annotation SummarizationSetBy = Automatic
+
+	column description
+		dataType: string
+		lineageTag: cba78c8d-6834-5933-919a-8ff1198beb8f
+		summarizeBy: none
+		sourceColumn: description
+
+		annotation SummarizationSetBy = Automatic
+
+	partition metric_catalog = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "metric_catalog.csv"), [Delimiter = ",", Columns = 7, Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"kpi_code", type text}, {"kpi_name", type text}, {"formula", type text}, {"unit", type text}, {"dbt_macro", type text}, {"business_question", type text}, {"description", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

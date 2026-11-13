@@ -1,0 +1,12 @@
+flowchart TD
+    A["1. Nạp Bronze<br/>00_load_bronze.py<br/>đối chiếu số dòng CSV = Bronze"] --> B["2. dbt build<br/>Silver → Gold → Mart → ml_features"]
+    B --> T{"124 nút dbt build<br/>unique, not_null, accepted_values,<br/>relationships, đối chiếu tổng"}
+    T -- "lỗi" --> X["Dừng pipeline,<br/>ghi audit_run_log"]
+    T -- "đạt" --> C["3. Profiling<br/>01_profiling.py"]
+    C --> D["4. Học máy (Python)<br/>K-Means · Hồi quy + what-if · ETS/SARIMA"]
+    D --> E["5. Phân tích SQL<br/>giỏ hàng · cohort · sắp xếp"]
+    E --> F["6. Biểu đồ và bảng"]
+    F --> G["7. Xuất data mart ra CSV<br/>cho Power BI"]
+    G --> H{"8. Đối chiếu Bronze = Silver = Gold<br/>09_checks.py"}
+    H -- "lệch" --> X
+    H -- "khớp" --> I["9. dbt docs generate (lineage)<br/>10. Dựng báo cáo Word"]

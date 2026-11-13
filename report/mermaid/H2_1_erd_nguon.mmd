@@ -1,0 +1,46 @@
+erDiagram
+    CUSTOMER ||--o{ ECOM_SALES : "đặt hàng"
+    PRODUCT  ||--o{ ECOM_SALES : "được bán"
+    REGION   ||--o{ ECOM_SALES : "giao tới"
+    ECOM_SALES {
+        int row_id PK
+        string order_id
+        date order_date
+        string customer_id FK
+        string segment
+        string region_code FK
+        string product_code FK
+        int quantity
+        decimal sales
+        decimal discount
+        decimal profit
+    }
+    CUSTOMER {
+        string customer_id PK
+        string first_name
+        string last_name
+        date birth_date
+        string marital_status
+        string gender
+        string email_address
+        int annual_income
+        string education_level
+        string occupation
+        string home_owner
+    }
+    PRODUCT {
+        string product_code PK
+        string product
+        string category
+        string subcategory
+    }
+    REGION {
+        string region_code PK
+        string city
+        string state
+        string country
+        double country_latitude
+        double country_longitude
+        string region
+        string market
+    }
