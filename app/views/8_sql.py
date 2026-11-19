@@ -139,8 +139,10 @@ with col1:
     example = st.selectbox("Câu mẫu", list(EXAMPLES))
     sql = st.text_area("SQL", EXAMPLES[example], height=260, key=f"sql_{example}")
     go = st.button("Chạy", type="primary")
+    first_visit = "sql_seen" not in st.session_state  # lần đầu mở trang: tự chạy câu mẫu
+    st.session_state["sql_seen"] = True
 
-if go and sql.strip():
+if (go or first_visit) and sql.strip():
     try:
         df, truncated, secs = run_sql(sql)
         st.success(f"{len(df):,} dòng{' (đã cắt ở 1.000)' if truncated else ''} · {secs * 1000:.0f} ms")
