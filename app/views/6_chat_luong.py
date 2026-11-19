@@ -18,10 +18,11 @@ c = st.columns(4)
 c[0].metric("Đối chiếu 3 lớp", f"{(matched == 'Có').sum()}/{len(matched)} khớp")
 c[1].metric("Dòng giao dịch Gold", num(total_lines))
 c[2].metric("Dòng lỗ (giữ lại)", num(flags[flags.is_loss].lines.sum()),
-            pct(flags[flags.is_loss].lines.sum() / total_lines) + " tổng dòng", delta_color="off")
+            pct(flags[flags.is_loss].lines.sum() / total_lines) + " tổng dòng", delta_color="off", delta_arrow="off")
 if not audit.empty:
     a = audit.iloc[0]
-    c[3].metric("Lần dbt build gần nhất", f"{a.ok}/{a.nodes} nút đạt", str(a.run_at)[:16], delta_color="off")
+    c[3].metric("Nút dbt đạt (lần build gần nhất)", f"{a.ok}/{a.nodes}", str(a.run_at)[:16], delta_color="off",
+                delta_arrow="off")
 
 st.subheader("Đối chiếu Bronze, Silver, Gold")
 col1, col2 = st.columns(2)

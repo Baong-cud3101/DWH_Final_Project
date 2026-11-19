@@ -49,11 +49,12 @@ mk = q(
 col1, col2 = st.columns(2)
 with col1:
     fig = px.bar(mk, x="year", y="revenue", color="market", barmode="group", title="Doanh thu (USD)")
-    fig.update_layout(height=380, xaxis=dict(type="category"), legend_title="")
+    fig.update_layout(height=380, xaxis=dict(type="category", title="Năm"), yaxis_title="USD", legend_title="")
     st.plotly_chart(fig, width="stretch")
 with col2:
     fig = px.line(mk, x="year", y="margin", color="market", markers=True, title="Biên lợi nhuận")
-    fig.update_layout(height=380, xaxis=dict(type="category"), yaxis_tickformat=".0%", legend_title="")
+    fig.update_layout(height=380, xaxis=dict(type="category"), yaxis_tickformat=".0%", legend_title="",
+                      xaxis_title="Năm", yaxis_title="Biên LN")
     st.plotly_chart(fig, width="stretch")
 
 st.subheader("Xếp hạng quốc gia")
@@ -67,7 +68,9 @@ with col2:
     fig = px.bar(top.iloc[::-1], x=order[0], y="country", orientation="h", color="margin",
                  color_continuous_scale="RdYlGn", color_continuous_midpoint=0,
                  hover_data={"revenue": ":,.0f", "profit": ":,.0f", "margin": ":.1%"})
-    fig.update_layout(height=max(350, 24 * int(n)), margin=dict(t=10), yaxis_title="", coloraxis_colorbar_tickformat=".0%")
+    fig.update_layout(height=max(350, 24 * int(n)), margin=dict(t=10), yaxis_title="",
+                      xaxis_title={"revenue": "Doanh thu (USD)", "profit": "Lợi nhuận (USD)", "margin": "Biên LN"}[order[0]],
+                      coloraxis_colorbar=dict(title="Biên LN", tickformat=".0%"))
     if order[0] == "margin":
         fig.update_xaxes(tickformat=".0%")
     st.plotly_chart(fig, width="stretch")

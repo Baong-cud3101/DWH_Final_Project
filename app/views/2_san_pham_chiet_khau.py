@@ -63,7 +63,7 @@ cb = q(
 heat = cb.pivot(index="category", columns="discount_band", values="margin")[band.discount_band.tolist()]
 fig = px.imshow(heat, text_auto=".0%", color_continuous_scale="RdYlGn", color_continuous_midpoint=0,
                 aspect="auto", labels=dict(color="Biên LN", x="Mức chiết khấu", y="Ngành hàng"))
-fig.update_layout(height=380, margin=dict(t=10))
+fig.update_layout(height=380, margin=dict(t=10), coloraxis_colorbar_tickformat=".0%")
 st.plotly_chart(fig, width="stretch")
 
 st.divider()
@@ -83,7 +83,8 @@ sub = q(
 fig = px.treemap(sub, path=["category", "subcategory"], values="revenue", color="margin",
                  color_continuous_scale="RdYlGn", color_continuous_midpoint=0,
                  hover_data={"profit": ":,.0f", "margin": ":.1%"})
-fig.update_layout(height=460, margin=dict(t=10, l=0, r=0, b=0))
+fig.update_layout(height=460, margin=dict(t=10, l=0, r=0, b=0),
+                  coloraxis_colorbar=dict(title="Biên LN", tickformat=".0%"))
 st.plotly_chart(fig, width="stretch")
 st.caption("Kích thước ô = doanh thu; màu = biên lợi nhuận (đỏ là lỗ).")
 

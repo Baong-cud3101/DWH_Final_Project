@@ -52,11 +52,12 @@ def in_list(values) -> tuple[str, tuple]:
 def usd(x: float, digits: int = 0) -> str:
     if pd.isna(x):
         return "-"
-    if abs(x) >= 1e6:
-        return f"${x / 1e6:,.2f}M"
-    if abs(x) >= 1e4:
-        return f"${x / 1e3:,.1f}K"
-    return f"${x:,.{digits}f}"
+    sign, x = ("-" if x < 0 else ""), abs(x)
+    if x >= 1e6:
+        return f"{sign}${x / 1e6:,.2f}M"
+    if x >= 1e4:
+        return f"{sign}${x / 1e3:,.1f}K"
+    return f"{sign}${x:,.{digits}f}"
 
 
 def pct(x: float, digits: int = 1) -> str:

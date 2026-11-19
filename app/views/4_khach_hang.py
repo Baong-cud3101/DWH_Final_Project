@@ -32,6 +32,8 @@ with tab_rfm:
     st.dataframe(
         rfm, hide_index=True, width="stretch",
         column_config={
+            "rfm_segment": "Nhóm RFM",
+            "customers": st.column_config.NumberColumn("Số khách", format="%,d"),
             "recency_days": st.column_config.NumberColumn("Recency TB (ngày)", format="%.0f"),
             "frequency": st.column_config.NumberColumn("Số đơn TB", format="%.2f"),
             "monetary": st.column_config.NumberColumn("Chi tiêu TB", format="$%.0f"),

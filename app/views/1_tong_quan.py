@@ -82,7 +82,7 @@ with col1:
     heat = seg.pivot(index="segment", columns="market", values="margin")
     fig = px.imshow(heat, text_auto=".1%", color_continuous_scale="RdYlGn", aspect="auto",
                     labels=dict(color="Biên LN", x="Thị trường", y="Phân khúc"))
-    fig.update_layout(height=320, margin=dict(t=10))
+    fig.update_layout(height=320, margin=dict(t=10), coloraxis_colorbar_tickformat=".0%")
     st.plotly_chart(fig, width="stretch")
 with col2:
     by_seg = seg.groupby("segment", as_index=False)[["revenue", "profit"]].sum()
