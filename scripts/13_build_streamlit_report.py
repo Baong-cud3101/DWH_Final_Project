@@ -20,6 +20,8 @@ APP_DB = ROOT / "app" / "data" / "xomecom_app.duckdb"
 SHOTS = ROOT / "report" / "streamlit"
 OUT = ROOT / "report" / "final" / "Streamlit.docx"
 FONT = "Times New Roman"
+PAGE_NAMES = {"1": "Tổng quan KPI", "2": "Sản phẩm & Chiết khấu", "3": "Địa lý", "4": "Khách hàng",
+              "5": "Học máy", "6": "Chất lượng dữ liệu"}
 APP_URL = sys.argv[1] if len(sys.argv) > 1 else None  # link sau khi triển khai
 
 
@@ -180,9 +182,9 @@ def main():
 
     shots = sorted(SHOTS.glob("*.png")) if SHOTS.exists() else []
     for i, img in enumerate(shots, 1):
-        doc.add_picture(str(img), width=Cm(16))
+        doc.add_picture(str(img), width=Cm(10))
         doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
-        name = img.stem.split("_", 1)[-1].replace("_", " ")
+        name = PAGE_NAMES.get(img.stem.split("_", 1)[0], img.stem)
         caption(doc, f"Hình {i}. Trang {name}")
 
     # 4
