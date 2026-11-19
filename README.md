@@ -30,6 +30,19 @@ Các bước của `run_all.py` (dừng ngay nếu một bước lỗi):
 
 Lệnh lẻ: `python scripts/run_dbt.py build`, `python scripts/run_dbt.py docs serve` (xem lineage), `python scripts/run_all.py --no-report`.
 
+## Ứng dụng Streamlit (triển khai trực tuyến)
+
+```bash
+pip install -r app/requirements.txt
+python scripts/12_build_app_data.py     # kho rút gọn app/data/xomecom_app.duckdb (chỉ bảng tổng hợp)
+streamlit run app/streamlit_app.py      # http://localhost:8501
+```
+
+6 trang: Tổng quan KPI, Sản phẩm & Chiết khấu, Địa lý, Khách hàng, Học máy, Chất lượng dữ liệu.
+Triển khai: đẩy repo lên GitHub, vào share.streamlit.io → Create app → Main file path `app/streamlit_app.py`.
+`app/data/xomecom_app.duckdb` không có bảng mức khách hàng (nhóm < 10 khách bị loại) nên được phép đưa lên Git.
+Báo cáo ngắn: `python scripts/13_build_streamlit_report.py [link]` → `report/final/Streamlit.docx`.
+
 ## Cấu trúc kho (`warehouse/xomecom.duckdb`)
 
 | Schema | Bảng |
@@ -55,6 +68,12 @@ Lệnh lẻ: `python scripts/run_dbt.py build`, `python scripts/run_dbt.py docs 
 | `report/mermaid/` | mã mermaid 6 sơ đồ để vẽ lại |
 | `report/final/` | báo cáo Word |
 
+## Việc nhóm cần làm thủ công
+
+1. Vẽ 6 sơ đồ từ `report/mermaid/*.mmd` (mermaid.live hoặc draw.io), thay vào các khung vàng trong Word.
+2. Chụp 4 ảnh: `dbt build` (dòng `Done. PASS=124`), cây schema trong DBeaver, lineage `dbt docs serve`, 4 trang dashboard.
+3. Dashboard Power BI: chạy `python scripts/11_build_powerbi.py` (đã có trong `run_all.py`), mở `powerbi/XomEcom_Dashboard.pbip` bằng Power BI Desktop và bấm Refresh. Đặc tả ở Phụ lục C; đổi thư mục CSV bằng tham số `DataFolder`. Bản đồ trang Địa lý là scatter kinh độ × vĩ độ nên hiển thị được mà không cần đăng nhập.
+4. Điền tên nhóm, MSSV, logo UEL, link Google Drive, bảng phân công; trong Word nhấn Ctrl+A rồi F9 để cập nhật Mục lục và Danh mục hình/bảng.
 
 ## Bảo mật dữ liệu
 
