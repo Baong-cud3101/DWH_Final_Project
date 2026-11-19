@@ -103,7 +103,11 @@ def source() -> str:
 
 
 def cursor() -> duckdb.DuckDBPyConnection:
-    return _connection()[0].cursor()
+    con, src = _connection()
+    cur = con.cursor()
+    if src == "motherduck":
+        cur.execute(f"USE {MD_DB}.app")  # cursor mới không kế thừa USE của kết nối gốc
+    return cur
 
 
 def _to_float(df: pd.DataFrame) -> pd.DataFrame:
