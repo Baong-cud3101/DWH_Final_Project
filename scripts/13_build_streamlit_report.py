@@ -121,10 +121,13 @@ def main():
 
     t = doc.add_paragraph(style="Title")
     t.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    t.add_run("Triển khai trực tuyến kho dữ liệu Xóm E-Com bằng Streamlit")
+    t.add_run("Triển khai trực tuyến kho dữ liệu Xóm E-Com")
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p.add_run("Nhóm 6 · BIM5021 Nhà kho dữ liệu và tích hợp · UEL").italic = True
+    p.add_run("MotherDuck · GitHub Actions · Streamlit Community Cloud").bold = True
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.add_run("Nhóm 6 · BIM5021 Nhà kho dữ liệu và tích hợp · UEL. Bổ sung cho mục 4.7 của báo cáo chính.").italic = True
 
     # 1
     doc.add_heading("1. Streamlit là gì và vì sao chọn", level=1)
@@ -218,7 +221,8 @@ def main():
         "Chạy workflow \"Pipeline kho dữ liệu (MotherDuck)\" ở tab Actions; khoảng 5 phút là kho trên MotherDuck đầy đủ.",
         "Streamlit Community Cloud: tạo app từ repo, Main file path app/streamlit_app.py, Python 3.11; "
         "trong Settings > Secrets thêm MOTHERDUCK_TOKEN.",
-        "Từ đó, mọi commit sửa dbt hoặc scripts đều tự chạy lại pipeline; ứng dụng thấy số mới sau tối đa 10 phút.",
+        "Từ đó, mọi commit sửa dbt hoặc scripts đều tự chạy lại pipeline; ứng dụng thấy số mới sau tối đa 10 phút. "
+        "Lần chạy ngày 19/11/2026 mất 3 phút 17 giây (dbt build 28 giây), đạt 123/123 nút và đối chiếu ba tầng đều khớp.",
     ]:
         doc.add_paragraph(s, style="List Number")
     p = doc.add_paragraph()
@@ -230,7 +234,7 @@ def main():
     bullets(doc, [
         "Dữ liệu nguồn là 4 file CSV tĩnh nên pipeline chạy lại cho cùng kết quả; khi có dữ liệu mới chỉ cần thay CSV trong repo riêng tư.",
         "Gói miễn phí của Streamlit Community Cloud cho ứng dụng ngủ khi lâu không có người truy cập; lần mở đầu mất khoảng 30 giây.",
-        "Benchmark sắp xếp theo order_date (mục 4.4 báo cáo chính) đo bố cục file DuckDB cục bộ nên không chạy trên MotherDuck.",
+        "Benchmark sắp xếp theo order_date (mục 4.1 báo cáo chính) đo bố cục file DuckDB cục bộ nên không chạy trên MotherDuck.",
     ])
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
