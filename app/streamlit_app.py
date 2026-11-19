@@ -9,7 +9,7 @@ import streamlit as st
 
 st.set_page_config(page_title="Xóm E-Com | Data Warehouse", page_icon="📊", layout="wide")
 
-from lib import last_run, source  # noqa: E402  (sau set_page_config)
+from lib import MD_ERROR, last_run, source  # noqa: E402  (sau set_page_config)
 
 pages = {
     "Phân tích": [
@@ -38,8 +38,8 @@ with st.sidebar:
                        + (f" · commit {run.commit_sha}" if run.commit_sha else ""))
     else:
         st.info("Đang dùng bản snapshot trong repo (không kết nối MotherDuck).", icon="📦")
-        if "md_error" in st.session_state:
-            st.caption(f"Lỗi kết nối: {st.session_state['md_error']}")
+        if MD_ERROR:
+            st.caption(f"Lý do: {MD_ERROR[0]}")
     st.divider()
 
 nav.run()

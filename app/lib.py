@@ -43,20 +43,38 @@ SEQ_SCALE = "Blues"
 DIV_SCALE = "RdYlGn"
 
 
-@st.cache_resource(show_spinner="Đang kết nối kho dữ liệu...")
-def _connection() -> tuple[duckdb.DuckDBPyConnection, str]:
-    if MD_TOKEN:
-        try:
-            # saas_mode: chặn đọc/ghi file trên máy chủ Streamlit và cài extension
-            con = duckdb.connect(f"md:{MD_DB}?motherduck_token={MD_TOKEN}&saas_mode=true")
-            con.execute(f"USE {MD_DB}.app")
-            return con, "motherduck"
-        except Exception as e:  # mất kết nối/token sai: rơi về snapshot
-            st.session_state["md_error"] = f"{type(e).__name__}: {str(e)[:200]}"
+MD_ERROR: list[str] = []  # lỗi kết nối MotherDuck gần nhất (hiện ở thanh bên)
+
+
+@st.cache_resource(show_spinner="Đang kết nối MotherDuck...")
+def _md_connection() -> duckdb.DuckDBPyConnection:
+    """Chỉ được cache khi kết nối thành công; lỗi sẽ được thử lại ở lần truy cập sau."""
+    con = duckdb.connect(f"md:{MD_DB}", config={"motherduck_token": MD_TOKEN})
+    con.execute(f"USE {MD_DB}.app")
+    con.execute("SELECT count(*) FROM kpi_overview").fetchone()
+    return con
+
+
+@st.cache_resource
+def _snapshot_connection() -> duckdb.DuckDBPyConnection:
     if not DB_PATH.exists():
         st.error(f"Không kết nối được MotherDuck và không thấy {DB_PATH.name}.")
         st.stop()
-    return duckdb.connect(str(DB_PATH), read_only=True), "snapshot"
+    return duckdb.connect(str(DB_PATH), read_only=True)
+
+
+def _connection() -> tuple[duckdb.DuckDBPyConnection, str]:
+    if MD_TOKEN:
+        try:
+            con = _md_connection()
+            MD_ERROR.clear()
+            return con, "motherduck"
+        except Exception as e:  # mất kết nối, token sai, kho chưa có schema app: dùng snapshot
+            msg = str(e).replace(str(MD_TOKEN), "***")[:300]
+            MD_ERROR[:] = [f"{type(e).__name__}: {msg}"]
+    else:
+        MD_ERROR[:] = ["Chưa khai báo secret MOTHERDUCK_TOKEN."]
+    return _snapshot_connection(), "snapshot"
 
 
 def source() -> str:
