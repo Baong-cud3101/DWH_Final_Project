@@ -12,6 +12,9 @@ RAW_DIR = ROOT / "data" / "raw"
 # (token lấy từ biến môi trường MOTHERDUCK_TOKEN)
 DB_URI = str(os.getenv("DUCKDB_PATH", ROOT / "warehouse" / "xomecom.duckdb"))
 IS_MOTHERDUCK = DB_URI.startswith("md:")
+if IS_MOTHERDUCK and os.getenv("MOTHERDUCK_TOKEN"):
+    # extension MotherDuck (và dbt-duckdb) đọc biến chữ thường motherduck_token
+    os.environ.setdefault("motherduck_token", os.environ["MOTHERDUCK_TOKEN"])
 DB_PATH = Path(DB_URI) if not IS_MOTHERDUCK else ROOT / "warehouse" / "_motherduck"
 TABLES_DIR = ROOT / "results" / "tables"
 FIG_DIR = ROOT / "results" / "figures"

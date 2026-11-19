@@ -28,7 +28,6 @@ jobs:
     env:
       DUCKDB_PATH: md:xomecom
       MOTHERDUCK_TOKEN: ${{ secrets.MOTHERDUCK_TOKEN }}
-      motherduck_token: ${{ secrets.MOTHERDUCK_TOKEN }}
       PYTHONIOENCODING: utf-8
       MPLBACKEND: Agg
     steps:
