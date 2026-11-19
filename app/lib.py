@@ -1,5 +1,13 @@
-"""Hàm dùng chung cho ứng dụng Streamlit: kết nối DuckDB, truy vấn có cache, định dạng số."""
+"""Hàm dùng chung cho ứng dụng Streamlit: kết nối kho, truy vấn có cache, định dạng số.
 
+Nguồn dữ liệu:
+- Có secret MOTHERDUCK_TOKEN: truy vấn trực tiếp schema app của kho trên MotherDuck
+  (số liệu của lần pipeline GitHub Actions gần nhất).
+- Không có: đọc bản snapshot app/data/xomecom_app.duckdb (chạy offline, không có mô hình).
+"""
+
+import decimal
+import os
 from pathlib import Path
 
 import duckdb
@@ -7,6 +15,20 @@ import pandas as pd
 import streamlit as st
 
 DB_PATH = Path(__file__).parent / "data" / "xomecom_app.duckdb"
+CACHE_TTL = 600  # giây; sau mỗi lần pipeline chạy, tối đa 10 phút app sẽ thấy số mới
+
+
+def secret(name: str, default=None):
+    try:
+        if name in st.secrets:
+            return st.secrets[name]
+    except Exception:  # không có file secrets
+        pass
+    return os.getenv(name, default)
+
+
+MD_TOKEN = secret("MOTHERDUCK_TOKEN")
+MD_DB = secret("MOTHERDUCK_DB", "xomecom")
 
 YEARS = [2020, 2021, 2022, 2023]
 MARKETS = ["Africa", "Asia Pacific", "Europe", "LATAM", "USCA"]
@@ -21,24 +43,57 @@ SEQ_SCALE = "Blues"
 DIV_SCALE = "RdYlGn"
 
 
-@st.cache_resource
-def _connection() -> duckdb.DuckDBPyConnection:
+@st.cache_resource(show_spinner="Đang kết nối kho dữ liệu...")
+def _connection() -> tuple[duckdb.DuckDBPyConnection, str]:
+    if MD_TOKEN:
+        try:
+            # saas_mode: chặn đọc/ghi file trên máy chủ Streamlit và cài extension
+            con = duckdb.connect(f"md:{MD_DB}?motherduck_token={MD_TOKEN}&saas_mode=true")
+            con.execute(f"USE {MD_DB}.app")
+            return con, "motherduck"
+        except Exception as e:  # mất kết nối/token sai: rơi về snapshot
+            st.session_state["md_error"] = f"{type(e).__name__}: {str(e)[:200]}"
     if not DB_PATH.exists():
-        st.error(
-            f"Không thấy {DB_PATH.name}. Chạy `python scripts/12_build_app_data.py` để tạo dữ liệu cho ứng dụng."
-        )
+        st.error(f"Không kết nối được MotherDuck và không thấy {DB_PATH.name}.")
         st.stop()
-    return duckdb.connect(str(DB_PATH), read_only=True)
+    return duckdb.connect(str(DB_PATH), read_only=True), "snapshot"
 
 
-@st.cache_data(show_spinner=False)
+def source() -> str:
+    """'motherduck' (kho trực tuyến) hoặc 'snapshot' (bản rút gọn trong repo)."""
+    return _connection()[1]
+
+
+def cursor() -> duckdb.DuckDBPyConnection:
+    return _connection()[0].cursor()
+
+
+def _to_float(df: pd.DataFrame) -> pd.DataFrame:
+    """DECIMAL từ view trả về đối tượng Decimal: đổi sang float để tính toán và vẽ."""
+    for c in df.columns:
+        if df[c].dtype == object:
+            first = df[c].dropna().head(1)
+            if len(first) and isinstance(first.iloc[0], decimal.Decimal):
+                df[c] = df[c].astype(float)
+    return df
+
+
+@st.cache_data(show_spinner=False, ttl=CACHE_TTL)
 def q(sql: str, params: tuple = ()) -> pd.DataFrame:
-    """Chạy một câu SQL trên kho rút gọn và trả về DataFrame (có cache)."""
-    cur = _connection().cursor()  # mỗi lần truy vấn một cursor riêng, an toàn khi nhiều phiên
+    """Chạy một câu SQL trên schema app và trả về DataFrame (cache 10 phút)."""
+    cur = cursor()  # mỗi lần truy vấn một cursor riêng, an toàn khi nhiều phiên
     try:
-        return cur.execute(sql, list(params)).df()
+        return _to_float(cur.execute(sql, list(params)).df())
     finally:
         cur.close()
+
+
+def last_run() -> pd.Series | None:
+    try:
+        df = q("SELECT * FROM pipeline_runs ORDER BY run_at DESC LIMIT 1")
+        return df.iloc[0] if len(df) else None
+    except Exception:
+        return None
 
 
 def in_list(values) -> tuple[str, tuple]:

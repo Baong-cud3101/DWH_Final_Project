@@ -13,7 +13,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from common import ROOT, TABLES_DIR, connect, update_key_numbers
+from common import IS_MOTHERDUCK, ROOT, TABLES_DIR, connect, update_key_numbers
 from style import apply_style, save
 
 apply_style()
@@ -145,46 +145,50 @@ fig.colorbar(im, ax=ax, format=matplotlib.ticker.PercentFormatter(1.0))
 save(fig, "H4.6_cohort_heatmap")
 coh.to_csv(TABLES_DIR / "B4.6b_cohort.csv", index=False, encoding="utf-8-sig")
 
-# 3) Sắp xếp theo order_date: so sánh bảng sắp xếp và không sắp xếp, ở quy mô thật (x1)
-#    và quy mô nhân bản x20 (~1 triệu dòng) vì DuckDB chia row group 122.880 dòng.
-query_tpl = (SQL_DIR / "explain_sort_benchmark.sql").read_text(encoding="utf-8")
-con.execute("create schema if not exists bench")
-con.execute("set threads = 1")
-bench = []
-for scale in (1, 20):
-    con.execute(f"""create or replace table bench.sorted_x{scale} as
-                    select f.* from gold.fact_sales f, range({scale}) order by order_date""")
-    con.execute(f"""create or replace table bench.unsorted_x{scale} as
-                    select f.* from gold.fact_sales f, range({scale}) order by hash(row_id, range)""")
-    con.execute("checkpoint")
-    for kind in ("unsorted", "sorted"):
-        tbl = f"bench.{kind}_x{scale}"
-        q = query_tpl.replace("{table}", tbl)
-        for _ in range(3):
-            con.execute(q).fetchall()
-        times = []
-        for _ in range(15):
-            t0 = time.perf_counter()
-            con.execute(q).fetchall()
-            times.append((time.perf_counter() - t0) * 1000)
-        plan = con.execute("explain analyze " + q).fetchall()
-        plan_txt = "\n".join(r[1] for r in plan)
-        (TABLES_DIR / f"B4.4b_explain_{kind}_x{scale}.txt").write_text(plan_txt, encoding="utf-8")
-        rows = con.execute(f"select count(*) from {tbl}").fetchone()[0]
-        matched = con.execute(
-            f"select count(*) from {tbl} where order_date between date '2023-10-01' and date '2023-12-31'"
-        ).fetchone()[0]
-        bench.append({"scale": f"x{scale}", "table_rows": rows, "layout": kind,
-                      "rows_matching_filter": matched,
-                      "median_ms": statistics.median(times), "min_ms": min(times)})
-con.execute("set threads = 4")
-import pandas as pd
+# Benchmark đo bố cục lưu trữ của file DuckDB cục bộ; trên MotherDuck (chạy ở GitHub Actions)
+# thì bỏ qua và giữ kết quả benchmark cũ.
+bdf = None
+if not IS_MOTHERDUCK:
+    # 3) Sắp xếp theo order_date: so sánh bảng sắp xếp và không sắp xếp, ở quy mô thật (x1)
+    #    và quy mô nhân bản x20 (~1 triệu dòng) vì DuckDB chia row group 122.880 dòng.
+    query_tpl = (SQL_DIR / "explain_sort_benchmark.sql").read_text(encoding="utf-8")
+    con.execute("create schema if not exists bench")
+    con.execute("set threads = 1")
+    bench = []
+    for scale in (1, 20):
+        con.execute(f"""create or replace table bench.sorted_x{scale} as
+                        select f.* from gold.fact_sales f, range({scale}) order by order_date""")
+        con.execute(f"""create or replace table bench.unsorted_x{scale} as
+                        select f.* from gold.fact_sales f, range({scale}) order by hash(row_id, range)""")
+        con.execute("checkpoint")
+        for kind in ("unsorted", "sorted"):
+            tbl = f"bench.{kind}_x{scale}"
+            q = query_tpl.replace("{table}", tbl)
+            for _ in range(3):
+                con.execute(q).fetchall()
+            times = []
+            for _ in range(15):
+                t0 = time.perf_counter()
+                con.execute(q).fetchall()
+                times.append((time.perf_counter() - t0) * 1000)
+            plan = con.execute("explain analyze " + q).fetchall()
+            plan_txt = "\n".join(r[1] for r in plan)
+            (TABLES_DIR / f"B4.4b_explain_{kind}_x{scale}.txt").write_text(plan_txt, encoding="utf-8")
+            rows = con.execute(f"select count(*) from {tbl}").fetchone()[0]
+            matched = con.execute(
+                f"select count(*) from {tbl} where order_date between date '2023-10-01' and date '2023-12-31'"
+            ).fetchone()[0]
+            bench.append({"scale": f"x{scale}", "table_rows": rows, "layout": kind,
+                          "rows_matching_filter": matched,
+                          "median_ms": statistics.median(times), "min_ms": min(times)})
+    con.execute("set threads = 4")
+    import pandas as pd
 
-bdf = pd.DataFrame(bench)
-bdf["speedup_vs_unsorted"] = bdf.groupby("scale").median_ms.transform("max") / bdf.median_ms
-print(bdf.round(2).to_string())
-bdf.to_csv(TABLES_DIR / "B4.4_sort_benchmark.csv", index=False, encoding="utf-8-sig")
-con.execute("drop schema bench cascade")
+    bdf = pd.DataFrame(bench)
+    bdf["speedup_vs_unsorted"] = bdf.groupby("scale").median_ms.transform("max") / bdf.median_ms
+    print(bdf.round(2).to_string())
+    bdf.to_csv(TABLES_DIR / "B4.4_sort_benchmark.csv", index=False, encoding="utf-8-sig")
+    con.execute("drop schema bench cascade")
 
 top = basket.head(5)
 update_key_numbers("analysis_sql", {
@@ -197,6 +201,6 @@ update_key_numbers("analysis_sql", {
     "apriori_thresholds": summ.round(4).to_dict(orient="records"),
     "apriori_top_rules": top_rules.round(4).to_dict(orient="records"),
     "cohort": coh.round(4).to_dict(orient="records"),
-    "sort_benchmark": bdf.round(3).to_dict(orient="records"),
+    **({"sort_benchmark": bdf.round(3).to_dict(orient="records")} if bdf is not None else {}),
 })
 con.close()

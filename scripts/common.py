@@ -8,7 +8,11 @@ import duckdb
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "data" / "raw"
-DB_PATH = Path(os.getenv("DUCKDB_PATH", ROOT / "warehouse" / "xomecom.duckdb"))
+# DUCKDB_PATH là đường dẫn file .duckdb, hoặc "md:<tên_db>" để chạy trên MotherDuck
+# (token lấy từ biến môi trường MOTHERDUCK_TOKEN)
+DB_URI = str(os.getenv("DUCKDB_PATH", ROOT / "warehouse" / "xomecom.duckdb"))
+IS_MOTHERDUCK = DB_URI.startswith("md:")
+DB_PATH = Path(DB_URI) if not IS_MOTHERDUCK else ROOT / "warehouse" / "_motherduck"
 TABLES_DIR = ROOT / "results" / "tables"
 FIG_DIR = ROOT / "results" / "figures"
 EXPORT_DIR = ROOT / "exports" / "powerbi"
@@ -20,7 +24,13 @@ for d in (TABLES_DIR, FIG_DIR, EXPORT_DIR, MODEL_DIR, DB_PATH.parent):
 
 
 def connect(read_only: bool = False) -> duckdb.DuckDBPyConnection:
-    return duckdb.connect(str(DB_PATH), read_only=read_only)
+    if IS_MOTHERDUCK:
+        db = DB_URI[3:]
+        con = duckdb.connect("md:")
+        con.execute(f"CREATE DATABASE IF NOT EXISTS {db}")
+        con.execute(f"USE {db}")
+        return con
+    return duckdb.connect(DB_URI, read_only=read_only)
 
 
 def register_model(con, name: str, version: str, algorithm: str, params: dict,

@@ -240,6 +240,10 @@ for name, m, ver, mm in (("repeat_tree", tree, "repeat_tree_v1", met.iloc[0]),
                    {"AUC": mm.AUC, "F1": mm.F1, "lift_top20": mm.lift_top20},
                    str(path.relative_to(MODEL_DIR.parent)))
 
+# Gói cây quyết định kèm bộ mã hóa để dự đoán trực tiếp trong ứng dụng Streamlit
+joblib.dump({"model": tree, "encoder": enc, "num": NUM, "cat": CAT},
+            MODEL_DIR / "repeat_tree_bundle_v1.joblib")
+
 update_key_numbers("classification", {
     "n_train": len(train), "n_test": len(test),
     "return_rate_train": float(train.y.mean()), "return_rate_test": float(base_rate),

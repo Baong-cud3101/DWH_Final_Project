@@ -30,18 +30,26 @@ Các bước của `run_all.py` (dừng ngay nếu một bước lỗi):
 
 Lệnh lẻ: `python scripts/run_dbt.py build`, `python scripts/run_dbt.py docs serve` (xem lineage), `python scripts/run_all.py --no-report`.
 
-## Ứng dụng Streamlit (triển khai trực tuyến)
+## Chạy trực tuyến: MotherDuck + GitHub Actions + Streamlit
+
+| Thành phần | Dịch vụ | Cấu hình |
+| --- | --- | --- |
+| Kho dữ liệu | MotherDuck (`md:xomecom`) | `DUCKDB_PATH=md:xomecom` + `MOTHERDUCK_TOKEN`; mọi script và dbt dùng chung qua `scripts/common.py` |
+| Pipeline | GitHub Actions `.github/workflows/pipeline.yml` | secrets `MOTHERDUCK_TOKEN`, `DATA_REPO_TOKEN`; variable `DATA_REPO` (repo riêng tư chứa 4 CSV) |
+| Ứng dụng | Streamlit Community Cloud, `app/streamlit_app.py` | secret `MOTHERDUCK_TOKEN` (nên dùng token chỉ-đọc) |
+
+Workflow chạy khi bấm *Run workflow*, khi có commit sửa `dbt/`, `scripts/`, `sql/`, và 8 giờ sáng thứ Hai.
+Các bước: Bronze → dbt build → profiling → ML → đối chiếu → `14_publish_models.py` (mô hình vào `ml.model_artifacts`)
+→ `12_build_app_data.py` (schema `app`: view phục vụ ứng dụng).
+
+Ứng dụng có 8 trang: 6 trang phân tích, **Dự đoán trực tiếp** (nạp mô hình từ kho) và **SQL Playground**
+(DuckDB trong bộ nhớ, chỉ bảng được phép, một câu SELECT, không truy cập file/mạng, 1.000 dòng, 15 giây).
+Không có token thì ứng dụng đọc snapshot `app/data/xomecom_app.duckdb` (chỉ bảng tổng hợp).
 
 ```bash
-pip install -r app/requirements.txt
-python scripts/12_build_app_data.py     # kho rút gọn app/data/xomecom_app.duckdb (chỉ bảng tổng hợp)
-streamlit run app/streamlit_app.py      # http://localhost:8501
+python scripts/12_build_app_data.py --snapshot   # cập nhật schema app + snapshot trong repo
+streamlit run app/streamlit_app.py
 ```
-
-6 trang: Tổng quan KPI, Sản phẩm & Chiết khấu, Địa lý, Khách hàng, Học máy, Chất lượng dữ liệu.
-Triển khai: đẩy repo lên GitHub, vào share.streamlit.io → Create app → Main file path `app/streamlit_app.py`.
-`app/data/xomecom_app.duckdb` không có bảng mức khách hàng (nhóm < 10 khách bị loại) nên được phép đưa lên Git.
-Báo cáo ngắn: `python scripts/13_build_streamlit_report.py [link]` → `report/final/Streamlit.docx`.
 
 ## Cấu trúc kho (`warehouse/xomecom.duckdb`)
 

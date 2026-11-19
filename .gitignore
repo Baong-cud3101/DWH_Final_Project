@@ -29,3 +29,6 @@ logs/
 __pycache__/
 .venv/
 .ipynb_checkpoints/
+
+# Thư mục giả khi DUCKDB_PATH=md:...
+warehouse/_motherduck/

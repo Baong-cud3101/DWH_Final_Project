@@ -1,0 +1,85 @@
+# Pipeline kho dữ liệu chạy trên GitHub Actions, ghi thẳng vào MotherDuck.
+# CSV gốc nằm trong repo riêng tư (DATA_REPO), không bao giờ có trong repo công khai này.
+#
+# Secrets cần có (Settings > Secrets and variables > Actions):
+#   MOTHERDUCK_TOKEN  token đọc-ghi của MotherDuck
+#   DATA_REPO_TOKEN   fine-grained token, quyền Contents: Read-only trên repo dữ liệu riêng tư
+# Variable (tab Variables):
+#   DATA_REPO         vd. Baong-cud3101/DWH_Final_Project_data
+
+name: Pipeline kho dữ liệu (MotherDuck)
+
+on:
+  workflow_dispatch:          # bấm "Run workflow" trên tab Actions
+  schedule:
+    - cron: "0 1 * * 1"       # 08:00 sáng thứ Hai giờ Việt Nam
+  push:
+    branches: [main]
+    paths: ["dbt/**", "scripts/**", "sql/**", "requirements.txt", ".github/workflows/pipeline.yml"]
+
+concurrency:
+  group: pipeline
+  cancel-in-progress: false
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DUCKDB_PATH: md:xomecom
+      MOTHERDUCK_TOKEN: ${{ secrets.MOTHERDUCK_TOKEN }}
+      motherduck_token: ${{ secrets.MOTHERDUCK_TOKEN }}
+      PYTHONIOENCODING: utf-8
+      MPLBACKEND: Agg
+    steps:
+      - name: Lấy mã nguồn
+        uses: actions/checkout@v4
+
+      - name: Lấy CSV gốc từ repo riêng tư
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.DATA_REPO }}
+          token: ${{ secrets.DATA_REPO_TOKEN }}
+          path: _private_data
+
+      - name: Chép CSV vào data/raw
+        run: |
+          mkdir -p data/raw
+          cp _private_data/*.csv data/raw/
+          rm -rf _private_data
+          ls -la data/raw
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Cài thư viện
+        run: pip install -r requirements.txt
+
+      - name: 1. Nạp Bronze
+        run: python scripts/00_load_bronze.py
+      - name: 2. dbt build (Silver, Gold, mart, ml_features + kiểm thử)
+        run: python scripts/run_dbt.py build
+      - name: 3. Profiling chất lượng
+        run: python scripts/01_profiling.py
+      - name: 4. ML - K-Means RFM
+        run: python scripts/03_ml_kmeans.py
+      - name: 5. ML - hồi quy biên + what-if
+        run: python scripts/04_ml_margin_whatif.py
+      - name: 6. ML - phân lớp khách quay lại
+        run: python scripts/04b_ml_classification.py
+      - name: 7. ML - chuỗi thời gian + bất thường
+        run: python scripts/05_ml_timeseries.py
+      - name: 8. Phân tích SQL (giỏ hàng, cohort)
+        run: python scripts/06_analysis_sql.py
+      - name: 9. Đối chiếu Bronze = Silver = Gold
+        run: python scripts/09_checks.py
+      - name: 10. Xuất bản mô hình vào kho
+        run: python scripts/14_publish_models.py
+      - name: 11. Dựng schema app cho Streamlit
+        run: python scripts/12_build_app_data.py
+
+      - name: Dọn dữ liệu trên máy chạy
+        if: always()
+        run: rm -rf data/raw warehouse models results exports

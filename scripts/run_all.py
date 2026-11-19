@@ -31,6 +31,8 @@ STEPS = [
     ("Xuất CSV cho Power BI", ["08_export_marts.py"]),
     ("Sinh dashboard Power BI (PBIP)", ["11_build_powerbi.py"]),
     ("Đối chiếu số liệu", ["09_checks.py"]),
+    ("Xuất bản mô hình vào kho (ml.model_artifacts)", ["14_publish_models.py"]),
+    ("Schema app + snapshot cho Streamlit", ["12_build_app_data.py", "--snapshot"]),
     ("dbt docs generate (lineage)", ["run_dbt.py", "docs", "generate"]),
     ("Dựng báo cáo Word", ["10_build_report.py"]),
 ]
