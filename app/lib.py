@@ -27,8 +27,27 @@ def secret(name: str, default=None):
     return os.getenv(name, default)
 
 
-MD_TOKEN = secret("MOTHERDUCK_TOKEN")
+def _clean_token(raw) -> str | None:
+    """Bỏ khoảng trắng, xuống dòng, ngoặc kép/đơn/cong dư ở hai đầu (lỗi hay gặp khi dán)."""
+    if not raw:
+        return None
+    tok = "".join(str(raw).split())  # token JWT không chứa khoảng trắng
+    return tok.strip("\"'“”‘’") or None
+
+
+MD_TOKEN = _clean_token(secret("MOTHERDUCK_TOKEN"))
 MD_DB = secret("MOTHERDUCK_DB", "xomecom")
+
+
+def token_info() -> str:
+    """Mô tả token để chẩn đoán mà không lộ token."""
+    raw = secret("MOTHERDUCK_TOKEN")
+    if not raw:
+        return "không có token"
+    raw = str(raw)
+    return (f"token dài {len(MD_TOKEN or '')} ký tự, bắt đầu '{(MD_TOKEN or '')[:3]}', "
+            f"số dấu chấm {(MD_TOKEN or '').count('.')} (JWT đúng có 2)"
+            + (", bản dán gốc có khoảng trắng/xuống dòng" if any(c.isspace() for c in raw) else ""))
 
 YEARS = [2020, 2021, 2022, 2023]
 MARKETS = ["Africa", "Asia Pacific", "Europe", "LATAM", "USCA"]
@@ -70,8 +89,9 @@ def _connection() -> tuple[duckdb.DuckDBPyConnection, str]:
             MD_ERROR.clear()
             return con, "motherduck"
         except Exception as e:  # mất kết nối, token sai, kho chưa có schema app: dùng snapshot
-            msg = str(e).replace(str(MD_TOKEN), "***")[:300]
-            MD_ERROR[:] = [f"{type(e).__name__}: {msg}"]
+            msg = str(e).replace(str(MD_TOKEN), "***")
+            msg = msg.split("threw an exception:")[-1].strip()[:400]
+            MD_ERROR[:] = [f"{msg} [{token_info()}]"]
     else:
         MD_ERROR[:] = ["Chưa khai báo secret MOTHERDUCK_TOKEN."]
     return _snapshot_connection(), "snapshot"
